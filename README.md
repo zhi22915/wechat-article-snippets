@@ -1,2 +1,128 @@
-# wechat-article-snippets
-A source-attributed archive of code blocks found in WeChat Official Account articles — indexed by article, author and topic for easy lookup, comparison and reuse.
+# wechat-article-snippets · 公众号代码块收录
+
+> 把散落在微信公众号技术文章里的代码块，按出处整理成**可检索、可复用、可追溯**的索引。
+
+[收录总表](INDEX.md) · [命名与仓库信息](REPO_META.md) · [贡献指南](CONTRIBUTING.md) · [版权说明](NOTICE.md)
+
+---
+
+## 这个仓库解决什么问题
+
+公众号是中文技术内容的重要载体，但代码在其中很难被二次利用：
+
+- 代码常以富文本甚至图片形式出现，复制后缩进、转义、引号容易失真；
+- 文章没有全局搜索，同一主题的实现散落在几十个公众号里，无法横向对比；
+- 文章可能删除、改版或链接失效，读过的示例就此丢失；
+- 读到时觉得有用，真要用时想不起在哪篇文章里见过。
+
+本仓库只做一件事：**把文章里的代码块拆成独立文件，连同原文出处一起归档**，让它们可以被 `grep`、被 diff、被引用。
+
+## 收录什么 / 不收录什么
+
+| 收录                      | 不收录                    |
+| ----------------------- | ---------------------- |
+| 文章中的完整代码块、示例片段          | 文章全文、段落大段摘录            |
+| 代码块正常运行所必需的最小上下文注释      | 截图、图片形式的代码（除非人工转录并标注）  |
+| 原文元信息：标题、公众号、作者、链接、发布日期 | 付费/加密内容、内部资料、明确禁止转载的内容 |
+| 可运行化所需的最小修正（单独存放并逐条说明）  | 含真实密钥、令牌、账号、内网地址的代码    |
+
+**原则：摘录必要代码，不搬运原文；每一段代码都能回溯到具体文章。**
+
+## 目录结构
+
+```
+wechat-article-snippets/
+├── README.md                 # 本文件
+├── REPO_META.md              # 仓库名称、简介、关键字（建仓库时照抄）
+├── INDEX.md                  # 全部条目的总索引表
+├── CONTRIBUTING.md           # 贡献流程与规范
+├── LICENSE / NOTICE.md       # 许可与版权声明
+├── templates/
+│   └── article.md            # 新条目模板
+└── articles/
+    └── YYYY-MM-DD-<slug>/
+        ├── README.md         # 条目说明：元数据 + 原文链接 + 代码块清单
+        ├── snippets/
+        │   ├── 01-xxx.py     # 按原文出现顺序编号，保持原样
+        │   └── 02-xxx.yaml
+        └── patches/          # 可选：为运行而做的最小修正，须说明原因
+```
+
+条目目录以**原文发布日期**开头，例如 `articles/2026-11-15-python-async-demo/`。
+
+## 条目元数据规范
+
+每个 `articles/*/README.md` 顶部使用 YAML front matter：
+
+```yaml
+---
+title: 原文标题（保持原样）
+account: 公众号名称
+author: 作者署名（若原文未标注则留空）
+url: https://mp.weixin.qq.com/s/...
+published_at: 2026-11-15
+collected_at: 2026-11-15
+tags: [python, asyncio, 并发]
+languages: [python, yaml]
+snippet_count: 2
+code_status: as-is
+license_note: 原文未声明许可
+---
+```
+
+`code_status` 取值：
+
+| 值          | 含义                             |
+| ---------- | ------------------------------ |
+| `as-is`    | 原样摘录，未做任何改动（默认）                |
+| `reviewed` | 人工校对过缩进、转义、全角字符，语义未变           |
+| `runnable` | 补过依赖或最小修正并能运行，改动记录于 `patches/` |
+
+## 命名与内容约定
+
+- 目录名：`YYYY-MM-DD-<slug>`，slug 用小写英文与连字符，不用空格和中文。
+- 代码文件：`NN-<short-name>.<ext>`，`NN` 为两位序号，对应代码在原文中出现的顺序。
+- **一个代码块一个文件，不合并、不拆分**；保持原样优先，不格式化、不改变量名、不删注释。
+- 语言无法判断时用 `.txt`，并在条目 README 中说明。
+- 任何为了可运行而做的修改放进 `patches/`，逐条写明改了什么、为什么，不覆盖 `snippets/` 里的原始摘录。
+- `INDEX.md` 每新增一个条目就要同步更新一行。
+
+## 快速检索
+
+```bash
+# 全局找某个 API 出现在哪些文章里
+rg -n "asyncio.gather" articles/
+
+# 只看某语言的代码文件
+rg -l "requests" articles/*/snippets/*.py
+
+# 按标签筛条目
+rg -l "^tags:.*爬虫" articles/*/README.md
+```
+
+也可以在 GitHub 内按 `tags`、`languages`、`account` 字段搜索，或直接用 [INDEX.md](INDEX.md) 浏览。
+
+## 如何贡献
+
+见 [CONTRIBUTING.md](CONTRIBUTING.md)。简述：复制 `templates/article.md` 新建条目目录 → 按原文顺序拆出代码文件 → 补齐元数据 → 在 `INDEX.md` 追加一行 → 提 PR。
+
+## 版权与合规
+
+**收录的代码块版权归原作者及原公众号所有**，本仓库不对这些代码授予任何许可，请在使用前查看原文许可声明并自行判断。本仓库不转载全文、不收录付费内容、不用于商业分发；若原作者不希望被收录，提一个 issue 即可，我们会尽快移除。详见 [NOTICE.md](NOTICE.md)。
+
+## 路线图
+
+- [ ] 由条目元数据自动生成 `INDEX.md` 与按语言/主题的索引
+- [ ] 为 `runnable` 条目增加基础的运行校验
+- [ ] 支持按公众号聚合的视图
+
+## 常见问题
+
+**Q：代码可以直接复制进项目用吗？**  
+A：先看 `license_note` 和原文声明。默认视为「可参考、不可直接再分发」，商业使用尤其需要先取得授权。
+
+**Q：原文链接失效了怎么办？**  
+A：保留原有链接与元信息，在条目 README 标注 `link_status: dead`；有正规存档链接时补充说明，不擅自替换内容。
+
+**Q：同一段代码在多篇文章里出现，收几次？**  
+A：各收一次，各自标注出处，并在条目 README 里互相链接，便于对照差异。
